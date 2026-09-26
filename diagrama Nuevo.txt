@@ -1,0 +1,245 @@
+@startuml
+ 
+
+package Controller #cdaed2{
+ class MemberController{
+  - MemberService service
+  + register(JavalinConfig): void
+ }
+
+ class LoanController{
+  -MemberService memberService
+  -LoanService loanService
+  +register(JavalinConfig): void
+ }
+ class ReservationController{
+  -ReservationService service
+  +register(JavalinConfig): void
+ }
+
+ class BookController{
+  -BookService service
+  +register(JavalinConfig): void
+ {
+}
+}
+
+package service #b6ffff{
+
+ class MemberService{
+  -MemberDao memberDao
+  -BookDao bookDao
+  -LoanDao loanDao
+  +register(Member): Member
+  +findAll():List<Member>
+  +checkout(int,int):Loan
+ }
+ class LoanService{
+  -int DUE DAYS = 21
+  -LoanDao loanDao
+  -BookDao bookDao
+  +findAll():List<Loan>
+  +returnLoan(int):Loan
+  +overdueLoans():List<Loan>
+ }
+
+ class ReservationService{
+  -ReservationDao reservationDao
+  -BookDao bookDao
+  -MemberDao memberDao
+  -LoanDao loanDao
+  +reserve(int,int):Reservation
+  +findAll():List<Reservation>
+  +fullfill(int):Loan
+ }
+ class BookService {
+  -BookDao dao
+  +listAll():List<Book>
+  +findById(int):Book
+  +create(Book):Book
+  +borrow(int):void
+  +returnCopy(int):void
+ }
+
+}
+
+package dao #88E788 {
+
+ Abstract BaseDao{
+  -Dao<T,integer>dao
+  +findAll():List<T>
+  +findById(int):T
+  +create(T):void
+  +update(T):void
+ }
+
+ interface CrudDao{}
+
+ interface BookDao{}
+ interface ReservationDao{}
+ interface LoanDao{}
+ interface MemberDao{}
+
+ class OrmliteBookDao{}
+ class OrmliteLoanDao{}
+ class OrmliteReservationDao{}
+ class OrmliteMemberDao{}
+
+}
+
+package db#E0B0FF{
+
+ class Database{
+  -ConnectionSource connectionSource
+  +connectionSource(): ConnectionSource
+  +seedifEmpty(): void
+ }
+}
+
+package model #FFC985{
+
+ class Loan{
+  - int id
+  -Member member
+  -Book book
+  -String loanDate
+  -String dueDate
+  -String returnDate
+  -boolean returned
+  -double overdueFee
+  +Loan()
+  +Loan(Member,Book,String,String)
+  +getId():int
+  +setId(int):void
+  +getMember():Member
+    + setMember(Member):void
+    + getBook(): Book
+    + setBook(Book):void
+    + getLoanDate():String
+    + setLoanDate(String):void
+    + getDueDate():String
+    + setDueDate(String):void
+    + getReturnDate() : String
+    + setReturnDate(String):void
+    + isReturned():boolean
+    + setReturned(boolean):void
+    + isOverdue() : boolean
+    + getOverdueFee() : double
+    + setOverdueFee(double):void
+ }
+ class Book{
+
+  - id : int
+    - title : String
+    - author : String
+    - isbn : String
+    - totalCopies : int
+    - availableCopies : int
+    + Book()
+    + Book(String,String,String,int)
+    + getId() : int
+    + setId(int) : void
+    + getTitle() : String
+    + setTitle(String) : void
+    + getAuthor() : String
+    + setAuthor(String) : void
+    + getIsbn() : String
+    + setIsbn(String) : void
+    + getTotalCopies() : int
+    + setTotalCopies(int) : void
+    + getAvailableCopies() : int
+    + setAvailableCopies(int) : void
+ }
+ 
+ class Member{
+  - id : int
+    - name : String
+    - email : String
+    + Member()
+    + Member(String,String)
+    + getId() : int
+    + setId(int) : void
+    + getName() : String
+    + setName(String) : void
+    + getEmail() : String
+    + setEmail(String) : void
+
+ }
+
+ class Reservation {
+ 
+  - id : int
+    - reservedAt : String
+    - fulfilled : boolean
+    - member : Member
+    - book : Book
+    + Reservation()
+    + Reservation(Member,Book,String)
+    + getId() : int
+    + setId(int) : void
+    + getMember() : Member
+    + setMember(Member) : void
+    + getBook() : Book
+    + setBook(Book) : void
+    + getReservedAt() : String
+    + setReservedAt(String) : void
+    + isFulfilled() : boolean
+    + setFulfilled(boolean) : void
+ 
+ }
+
+}
+
+MemberController --> MemberService
+LoanController --> MemberService
+LoanController --> LoanService
+ReservationController --> ReservationService
+BookController --> BookService
+
+' --- 2. Servicios usan Interfaces DAO (No implementaciones concretas) ---
+MemberService --> MemberDao
+MemberService --> BookDao
+MemberService --> LoanDao
+
+LoanService --> LoanDao
+LoanService --> BookDao
+
+ReservationService --> ReservationDao
+ReservationService --> BookDao
+ReservationService --> MemberDao
+ReservationService --> LoanDao
+
+BookService --> BookDao
+
+' --- 3. Jerarquía Option 4 (Implementación y Extensión de DAOs) ---
+BaseDao ..|> CrudDao 
+
+BookDao --|> CrudDao 
+LoanDao --|> CrudDao 
+ReservationDao --|> CrudDao 
+MemberDao --|> CrudDao 
+
+OrmliteBookDao --|> BaseDao 
+OrmliteBookDao ..|> BookDao 
+
+OrmliteLoanDao --|> BaseDao 
+OrmliteLoanDao ..|> LoanDao 
+
+OrmliteMemberDao --|> BaseDao 
+OrmliteMemberDao ..|> MemberDao 
+
+OrmliteReservationDao --|> BaseDao 
+OrmliteReservationDao ..|> ReservationDao 
+
+' --- 4. Asociaciones en Modelos ---
+
+Loan "*" --> "1" Member 
+Loan "*" --> "1" Book 
+Reservation "*" --> "1" Member 
+Reservation "*" --> "1" Book 
+Database ..> BaseDao 
+BookDao ..> Book  
+MemberDao ..> Member 
+LoanDao ..> Loan 
+ReservationDao ..> Reservation 
+@enduml
