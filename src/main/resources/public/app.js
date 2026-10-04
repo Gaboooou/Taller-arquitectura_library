@@ -4,8 +4,14 @@ const esc = (s) => (s ?? '').toString().replace(/[&<>"]/g, (c) => (
 ));
 
 const now = new Date();
-const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-const isOverdue = (l) => !l.returned && l.dueDate < today;
+const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+const isOverdue = (l) => {
+    if (l.returned || !l.dueDate) return false;
+    let dateStr = Array.isArray(l.dueDate) 
+        ? l.dueDate[0] + '-' + String(l.dueDate[1]).padStart(2, '0') + '-' + String(l.dueDate[2]).padStart(2, '0')
+        : l.dueDate;
+    return dateStr < today;
+};
 
 class Api {
     static async request(path, options = {}) {
@@ -13,7 +19,7 @@ class Api {
             headers: { 'Content-Type': 'application/json' },
             ...options,
         });
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
         return res.json();
     }
 
@@ -42,7 +48,7 @@ class LibraryApp {
         try {
             await this.refresh();
         } catch (err) {
-            this.notify(`Failed to load data: ${err.message}`);
+            this.notify('Failed to load data: ' + err.message);
         }
     }
 
@@ -56,7 +62,7 @@ class LibraryApp {
         document.querySelectorAll('.tabs li').forEach((t) => t.classList.remove('is-active'));
         li.classList.add('is-active');
         document.querySelectorAll('.tab-pane').forEach((p) => p.classList.add('is-hidden'));
-        document.getElementById(`tab-${tab}`).classList.remove('is-hidden');
+        document.getElementById('tab-' + tab).classList.remove('is-hidden');
     }
 
     bindActions() {
@@ -80,14 +86,14 @@ class LibraryApp {
         this.bindForm('loan-form', () => {
             const memberId = document.querySelector('#loan-form [name=memberId]').value;
             const bookId = document.querySelector('#loan-form [name=bookId]').value;
-            return Api.post(`/loans?memberId=${memberId}&bookId=${bookId}`)
+            return Api.post('/loans?memberId=' + memberId + '&bookId=' + bookId)
                 .then(() => Promise.all([this.loadLoans(), this.loadBooks()]));
         });
 
         this.bindForm('reservation-form', () => {
             const memberId = document.querySelector('#reservation-form [name=memberId]').value;
             const bookId = document.querySelector('#reservation-form [name=bookId]').value;
-            return Api.post(`/reservations?memberId=${memberId}&bookId=${bookId}`)
+            return Api.post('/reservations?memberId=' + memberId + '&bookId=' + bookId)
                 .then(() => this.loadReservations());
         });
     }
@@ -113,17 +119,7 @@ class LibraryApp {
     async loadBooks() {
         this.books = await Api.get('/books');
         document.getElementById('books-body').innerHTML = this.books.length
-            ? this.books.map((b) => `
-                <tr>
-                    <td>${b.id}</td>
-                    <td>${esc(b.title)}</td>
-                    <td>${esc(b.author)}</td>
-                    <td><span class="tag is-light">${esc(b.isbn)}</span></td>
-                    <td>${b.totalCopies}</td>
-                    <td>${b.availableCopies === 0
-                        ? '<span class="tag is-danger is-light">Out of stock</span>'
-                        : b.availableCopies}</td>
-                </tr>`).join('')
+            ? this.books.map((b) => '<tr><td>' + b.id + '</td><td>' + esc(b.title) + '</td><td>' + esc(b.author) + '</td><td><span class="tag is-light">' + esc(b.isbn) + '</span></td><td>' + b.totalCopies + '</td><td>' + (b.availableCopies === 0 ? '<span class="tag is-danger is-light">Out of stock</span>' : b.availableCopies) + '</td></tr>').join('')
             : this.emptyRow(6, 'No books yet. Add one above.');
         this.updateStats();
     }
@@ -131,12 +127,7 @@ class LibraryApp {
     async loadMembers() {
         this.members = await Api.get('/members');
         document.getElementById('members-body').innerHTML = this.members.length
-            ? this.members.map((m) => `
-                <tr>
-                    <td>${m.id}</td>
-                    <td>${esc(m.name)}</td>
-                    <td><a href="mailto:${esc(m.email)}">${esc(m.email)}</a></td>
-                </tr>`).join('')
+            ? this.members.map((m) => '<tr><td>' + m.id + '</td><td>' + esc(m.name) + '</td><td><a href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a></td></tr>').join('')
             : this.emptyRow(3, 'No members yet. Register one above.');
         this.updateStats();
     }
@@ -144,22 +135,7 @@ class LibraryApp {
     async loadLoans() {
         this.loans = await Api.get('/loans');
         document.getElementById('loans-body').innerHTML = this.loans.length
-            ? this.loans.map((l) => `
-                <tr>
-                    <td>${l.id}</td>
-                    <td>${esc(l.book?.title)}</td>
-                    <td>${esc(l.member?.name)}</td>
-                    <td>${esc(l.dueDate)}</td>
-                    <td>${l.returned
-                        ? '<span class="tag is-success is-light">Returned</span>'
-                        : isOverdue(l)
-                            ? '<span class="tag is-danger is-light">Overdue</span>'
-                            : '<span class="tag is-warning is-light">On loan</span>'}</td>
-                    <td>${l.overdueFee > 0
-                        ? `<span class="has-text-danger has-text-weight-semibold">$${l.overdueFee.toFixed(2)}</span>`
-                        : '<span class="has-text-grey">$0.00</span>'}</td>
-                    <td>${l.returned ? '' : `<button class="button is-small is-success is-light" data-action="return" data-id="${l.id}"><span class="icon is-small"><i class="fas fa-check"></i></span><span>Return</span></button>`}</td>
-                </tr>`).join('')
+            ? this.loans.map((l) => '<tr><td>' + l.id + '</td><td>' + esc(l.book?.title) + '</td><td>' + esc(l.member?.name) + '</td><td>' + esc(l.dueDate) + '</td><td>' + (l.returned ? '<span class="tag is-success is-light">Returned</span>' : isOverdue(l) ? '<span class="tag is-danger is-light">Overdue</span>' : '<span class="tag is-warning is-light">On loan</span>') + '</td><td>' + (l.overdueFee > 0 ? '<span class="has-text-danger has-text-weight-semibold">$' + l.overdueFee.toFixed(2) + '</span>' : '<span class="has-text-grey">$0.00</span>') + '</td><td>' + (l.returned ? '' : '<button class="button is-small is-success is-light" data-action="return" data-id="' + l.id + '"><span class="icon is-small"><i class="fas fa-check"></i></span><span>Return</span></button>') + '</td></tr>').join('')
             : this.emptyRow(7, 'No loans yet.');
         this.updateStats();
     }
@@ -167,28 +143,18 @@ class LibraryApp {
     async loadReservations() {
         this.reservations = await Api.get('/reservations');
         document.getElementById('reservations-body').innerHTML = this.reservations.length
-            ? this.reservations.map((r) => `
-                <tr>
-                    <td>${r.id}</td>
-                    <td>${esc(r.book?.title)}</td>
-                    <td>${esc(r.member?.name)}</td>
-                    <td>${esc(r.reservedAt)}</td>
-                    <td>${r.fulfilled
-                        ? '<span class="tag is-success is-light">Fulfilled</span>'
-                        : '<span class="tag is-info is-light">Pending</span>'}</td>
-                    <td>${r.fulfilled ? '' : `<button class="button is-small is-success is-light" data-action="fulfill" data-id="${r.id}"><span class="icon is-small"><i class="fas fa-check"></i></span><span>Fulfill</span></button>`}</td>
-                </tr>`).join('')
+            ? this.reservations.map((r) => '<tr><td>' + r.id + '</td><td>' + esc(r.book?.title) + '</td><td>' + esc(r.member?.name) + '</td><td>' + esc(r.reservedAt) + '</td><td>' + (r.fulfilled ? '<span class="tag is-success is-light">Fulfilled</span>' : '<span class="tag is-info is-light">Pending</span>') + '</td><td>' + (r.fulfilled ? '' : '<button class="button is-small is-success is-light" data-action="fulfill" data-id="' + r.id + '"><span class="icon is-small"><i class="fas fa-check"></i></span><span>Fulfill</span></button>') + '</td></tr>').join('')
             : this.emptyRow(6, 'No reservations yet.');
         this.updateStats();
     }
 
     async returnLoan(id) {
-        await Api.post(`/loans/${id}/return`);
+        await Api.post('/loans/' + id + '/return');
         await Promise.all([this.loadLoans(), this.loadBooks()]);
     }
 
     async fulfill(id) {
-        await Api.post(`/reservations/${id}/fulfill`);
+        await Api.post('/reservations/' + id + '/fulfill');
         await Promise.all([this.loadReservations(), this.loadLoans(), this.loadBooks()]);
     }
 
@@ -200,13 +166,13 @@ class LibraryApp {
     }
 
     emptyRow(colspan, message) {
-        return `<tr><td colspan="${colspan}" class="has-text-centered has-text-grey">${message}</td></tr>`;
+        return '<tr><td colspan="' + colspan + '" class="has-text-centered has-text-grey">' + message + '</td></tr>';
     }
 
     notify(message, type = 'is-danger') {
         const el = document.createElement('div');
-        el.className = `notification ${type} is-light`;
-        el.innerHTML = `<button class="delete"></button>${esc(message)}`;
+        el.className = 'notification ' + type + ' is-light';
+        el.innerHTML = '<button class="delete"></button>' + esc(message);
         el.querySelector('.delete').addEventListener('click', () => el.remove());
         document.getElementById('notifications').appendChild(el);
         setTimeout(() => el.remove(), 5000);
@@ -214,7 +180,4 @@ class LibraryApp {
 }
 
 new LibraryApp().init();
-
-
-
 
