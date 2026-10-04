@@ -1,3 +1,8 @@
+
+/*
+ * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
+ */
+
 package cl.ucn.disc.arqsist.library.service;
 
 import cl.ucn.disc.arqsist.library.dao.Interface.BookDao;
