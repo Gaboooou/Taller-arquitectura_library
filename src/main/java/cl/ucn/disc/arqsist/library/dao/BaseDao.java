@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
+ */
+
 package cl.ucn.disc.arqsist.library.dao;
 
 import cl.ucn.disc.arqsist.library.dao.Interface.CrudDao;
@@ -10,9 +14,23 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+/**
+ * The BaseDao class.
+ *
+ * @param <T> the type parameter
+ */
 public abstract class BaseDao<T> implements CrudDao<T> {
+    /**
+     * The Dao.
+     */
     protected final Dao<T, Integer> dao;
 
+    /**
+     * Instantiates a new Base dao.
+     *
+     * @param connectionSource the connection source
+     * @param clazz            the clazz
+     */
     protected BaseDao(ConnectionSource connectionSource, Class<T> clazz){
         try {
             this.dao = DaoManager.createDao(connectionSource, clazz);
@@ -21,6 +39,11 @@ public abstract class BaseDao<T> implements CrudDao<T> {
         }
     }
 
+    /**
+     * Find all list.
+     *
+     * @return the list
+     */
     @Override
     public List<T> findAll() {
         try {
@@ -30,6 +53,12 @@ public abstract class BaseDao<T> implements CrudDao<T> {
         }
     }
 
+    /**
+     * Find by id.
+     *
+     * @param id the id
+     * @return the t
+     */
     @Override
     public T findById(int id){
         try {
@@ -39,6 +68,11 @@ public abstract class BaseDao<T> implements CrudDao<T> {
         }
     }
 
+    /**
+     * Create.
+     *
+     * @param entity the entity
+     */
     @Override
     public void create(T entity)  {
         try {
@@ -48,6 +82,11 @@ public abstract class BaseDao<T> implements CrudDao<T> {
         }
     }
 
+    /**
+     * Update.
+     *
+     * @param entity the entity
+     */
     @Override
     public void update(T entity) {
         try {
@@ -57,6 +96,11 @@ public abstract class BaseDao<T> implements CrudDao<T> {
         }
     }
 
+    /**
+     * Delete.
+     *
+     * @param entity the entity
+     */
     @Override
     public void delete(T entity) {
         try {
@@ -66,6 +110,14 @@ public abstract class BaseDao<T> implements CrudDao<T> {
         }
     }
 
+    /**
+     * Transaction r.
+     *
+     * @param <R>      the type parameter
+     * @param callable the callable
+     * @return the r
+     * @throws SQLException the sql exception
+     */
     public <R> R transaction(Callable<R> callable) throws SQLException {
         try {
             return TransactionManager.callInTransaction(dao.getConnectionSource(), callable);
