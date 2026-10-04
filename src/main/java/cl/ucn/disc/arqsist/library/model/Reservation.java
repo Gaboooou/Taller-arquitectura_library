@@ -3,6 +3,8 @@ package cl.ucn.disc.arqsist.library.model;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.time.LocalDate;
+
 @DatabaseTable(tableName = "reservations")
 public final class Reservation {
 
@@ -15,8 +17,8 @@ public final class Reservation {
     @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
     private Book book;
 
-    @DatabaseField(canBeNull = false)
-    private String reservedAt;
+    @DatabaseField(canBeNull = false, persisterClass = LocalDatePersister.class)
+    private LocalDate reservedAt;
 
     @DatabaseField
     private boolean fulfilled;
