@@ -30,12 +30,21 @@ public final class BookService {
 
     public void borrow(int bookId) {
         Book book = dao.findById(bookId);
+        if (book == null) {
+            throw new NotFoundException("Book not found: " + bookId);
+        }
+        if (book.getAvailableCopies() <= 0) {
+            throw new IllegalStateException("No available copies of book " + bookId);
+        }
         book.setAvailableCopies(book.getAvailableCopies() - 1);
         dao.update(book);
     }
 
     public void returnCopy(int bookId) {
         Book book = dao.findById(bookId);
+        if (book == null) {
+            throw new NotFoundException("Book not found: " + bookId);
+        }
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         dao.update(book);
     }
