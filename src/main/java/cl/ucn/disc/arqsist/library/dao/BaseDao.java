@@ -4,9 +4,11 @@ import cl.ucn.disc.arqsist.library.dao.Interface.CrudDao;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.misc.TransactionManager;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public abstract class BaseDao<T> implements CrudDao<T> {
     protected final Dao<T, Integer> dao;
@@ -61,6 +63,17 @@ public abstract class BaseDao<T> implements CrudDao<T> {
             dao.delete(entity);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public <R> R transaction(Callable<R> callable) throws SQLException {
+        try {
+            return TransactionManager.callInTransaction(dao.getConnectionSource(), callable);
+        } catch (SQLException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            }
+            throw e;
         }
     }
 }
