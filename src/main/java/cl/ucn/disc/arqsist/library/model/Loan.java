@@ -24,7 +24,7 @@ public final class Loan {
     @DatabaseField(canBeNull = false, persisterClass = LocalDatePersister.class)
     private LocalDate dueDate;
 
-    @DatabaseField
+    @DatabaseField(persisterClass = LocalDatePersister.class)
     private LocalDate returnDate;
 
     @DatabaseField
@@ -101,6 +101,8 @@ public final class Loan {
         this.returned = returned;
     }
 
+    public boolean isOverdue() { return !returned && LocalDate.now().isAfter(dueDate); }
+
     public double getOverdueFee() {
         return overdueFee;
     }
@@ -109,3 +111,5 @@ public final class Loan {
         this.overdueFee = overdueFee;
     }
 }
+
+

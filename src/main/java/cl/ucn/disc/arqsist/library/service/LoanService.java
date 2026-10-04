@@ -38,9 +38,9 @@ public final class LoanService {
         }
 
         loan.setReturned(true);
-        loan.setReturnDate(LocalDate.now().toString());
+        loan.setReturnDate(LocalDate.now());
 
-        LocalDate due = LocalDate.parse(loan.getDueDate());
+        LocalDate due = loan.getDueDate();
         LocalDate today = LocalDate.now();
         if (today.isAfter(due)) {
             long daysOverdue = ChronoUnit.DAYS.between(due, today);
@@ -60,3 +60,4 @@ public final class LoanService {
         return loanDao.findAll().stream().filter(Loan::isOverdue).toList();
     }
 }
+

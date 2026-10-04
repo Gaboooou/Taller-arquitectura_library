@@ -29,7 +29,7 @@ public final class ReservationService {
     public Reservation reserve(int bookId, int memberId) {
         Book book = bookDao.findById(bookId);
         Member member = memberDao.findById(memberId);
-        Reservation reservation = new Reservation(member, book, LocalDate.now().toString());
+        Reservation reservation = new Reservation(member, book, LocalDate.now());
         reservationDao.create(reservation);
         return reservation;
     }
@@ -47,9 +47,10 @@ public final class ReservationService {
         reservation.setFulfilled(true);
         reservationDao.update(reservation);
 
-        String dueDate = LoanPolicy.dueDate(LocalDate.now()).toString();
-        Loan loan = new Loan(reservation.getMember(), reservation.getBook(), LocalDate.now().toString(), dueDate);
+        LocalDate dueDate = LoanPolicy.dueDate(LocalDate.now());
+        Loan loan = new Loan(reservation.getMember(), reservation.getBook(), LocalDate.now(), dueDate);
         loanDao.create(loan);
         return loan;
     }
 }
+
