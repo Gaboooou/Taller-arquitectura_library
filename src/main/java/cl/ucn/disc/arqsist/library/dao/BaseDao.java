@@ -1,14 +1,13 @@
 /*
  * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
  */
-
 package cl.ucn.disc.arqsist.library.dao;
 
 import cl.ucn.disc.arqsist.library.dao.Interface.CrudDao;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.misc.TransactionManager;
+import com.j256.ormlite.support.ConnectionSource;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -20,6 +19,7 @@ import java.util.concurrent.Callable;
  * @param <T> the type parameter
  */
 public abstract class BaseDao<T> implements CrudDao<T> {
+
     /**
      * The Dao.
      */
@@ -31,7 +31,7 @@ public abstract class BaseDao<T> implements CrudDao<T> {
      * @param connectionSource the connection source
      * @param clazz            the clazz
      */
-    protected BaseDao(ConnectionSource connectionSource, Class<T> clazz){
+    protected BaseDao(ConnectionSource connectionSource, Class<T> clazz) {
         try {
             this.dao = DaoManager.createDao(connectionSource, clazz);
         } catch (SQLException e) {
@@ -60,7 +60,7 @@ public abstract class BaseDao<T> implements CrudDao<T> {
      * @return the t
      */
     @Override
-    public T findById(int id){
+    public T findById(int id) {
         try {
             return dao.queryForId(id);
         } catch (SQLException e) {
@@ -74,7 +74,7 @@ public abstract class BaseDao<T> implements CrudDao<T> {
      * @param entity the entity
      */
     @Override
-    public void create(T entity)  {
+    public void create(T entity) {
         try {
             dao.create(entity);
         } catch (SQLException e) {
@@ -111,21 +111,21 @@ public abstract class BaseDao<T> implements CrudDao<T> {
     }
 
     /**
-     * Transaction r.
+     * Executes a callable within a database transaction.
      *
      * @param <R>      the type parameter
      * @param callable the callable
-     * @return the r
-     * @throws SQLException the sql exception
+     * @return the result of the callable
      */
-    public <R> R transaction(Callable<R> callable) throws SQLException {
+    @Override
+    public <R> R transaction(Callable<R> callable) {
         try {
             return TransactionManager.callInTransaction(dao.getConnectionSource(), callable);
         } catch (SQLException e) {
-            if (e.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) e.getCause();
+            if (e.getCause() instanceof RuntimeException runtimeException) {
+                throw runtimeException;
             }
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 }
