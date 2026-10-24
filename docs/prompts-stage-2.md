@@ -84,3 +84,18 @@
 
 - **Archivos modificados:**
   - `docs/prompts-stage-2.md`
+
+---
+
+## Prompt 5: Revisión del Paso 4 (Controladores — Cambio 12), Corrección de Javadoc/Licencias y Avance al Paso 5 (`App.java` — Cambio 11)
+- **Modelo:** `Geminis Argon 4`
+- **Prompt literal del usuario:**
+> Ya he realizo el paso numero 4, avancemos al siguiente, revisalo para corregir errores y subirlo a git
+
+- **Archivos modificados:**
+  - `src/main/java/cl/ucn/disc/arqsist/library/controller/BookController.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/controller/LoanController.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/controller/ReservationController.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/controller/MemberController.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/service/ReservationService.java`
+  - `docs/prompts-stage-2.md`

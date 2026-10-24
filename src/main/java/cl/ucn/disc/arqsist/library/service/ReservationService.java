@@ -3,7 +3,6 @@
  */
 package cl.ucn.disc.arqsist.library.service;
 
-
 import cl.ucn.disc.arqsist.library.dao.Interface.LoanDao;
 import cl.ucn.disc.arqsist.library.dao.Interface.MemberDao;
 import cl.ucn.disc.arqsist.library.dao.Interface.ReservationDao;
@@ -11,6 +10,7 @@ import cl.ucn.disc.arqsist.library.model.Book;
 import cl.ucn.disc.arqsist.library.model.Loan;
 import cl.ucn.disc.arqsist.library.model.Member;
 import cl.ucn.disc.arqsist.library.model.Reservation;
+
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,25 +24,27 @@ public final class ReservationService {
      * The reservation dao.
      */
     private final ReservationDao reservationDao;
-    
+
     /**
      * The member dao.
      */
     private final MemberDao memberDao;
-    
+
     /**
      * The loan dao.
      */
     private final LoanDao loanDao;
 
     /**
-     * The book Service
+     * The book service.
      */
     private final BookService bookService;
+
     /**
-     * The Java Time Clock
+     * The clock used to obtain the current date.
      */
     private final Clock clock;
+
     /**
      * Instantiates a new Reservation service.
      *
@@ -50,7 +52,7 @@ public final class ReservationService {
      * @param memberDao      the member dao
      * @param loanDao        the loan dao
      * @param bookService    the book service
-     * @param clock          the Java Time Clock
+     * @param clock          the clock
      */
     public ReservationService(ReservationDao reservationDao, MemberDao memberDao, LoanDao loanDao, BookService bookService, Clock clock) {
         this.reservationDao = reservationDao;
@@ -69,13 +71,13 @@ public final class ReservationService {
      */
     public Reservation reserve(int bookId, int memberId) {
         Book book = bookService.findById(bookId);
-        if (book == null){
-            throw new NotFoundException("Book not found" + bookId);
+        if (book == null) {
+            throw new NotFoundException("Book not found: " + bookId);
         }
 
         Member member = memberDao.findById(memberId);
-        if (member == null){
-            throw new NotFoundException("Member not found" + memberId);
+        if (member == null) {
+            throw new NotFoundException("Member not found: " + memberId);
         }
         Reservation reservation = new Reservation(member, book, LocalDate.now(clock));
         reservationDao.create(reservation);
@@ -100,16 +102,15 @@ public final class ReservationService {
     public Loan fulfill(int reservationId) {
         Reservation reservation = reservationDao.findById(reservationId);
         if (reservation == null) {
-            throw new NotFoundException("Reservation not found:" + reservationId );
+            throw new NotFoundException("Reservation not found: " + reservationId);
         }
 
-        if (reservation.isFulfilled()){
-            throw new IllegalStateException("Reservation already fulfilled:" + reservationId);
+        if (reservation.isFulfilled()) {
+            throw new IllegalStateException("Reservation already fulfilled: " + reservationId);
         }
 
         LocalDate today = LocalDate.now(clock);
         LocalDate dueDate = LoanPolicy.dueDate(today);
-
 
         return reservationDao.transaction(() -> {
             reservation.setFulfilled(true);
