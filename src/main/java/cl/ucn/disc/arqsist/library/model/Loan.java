@@ -213,15 +213,6 @@ public final class Loan {
     }
 
     /**
-     * Checks if overdue.
-     *
-     * @return true if overdue, false otherwise
-     */
-    public boolean isOverdue() { 
-        return !returned && LocalDate.now().isAfter(dueDate); 
-    }
-
-    /**
      * Gets the overdue fee.
      *
      * @return the overdue fee

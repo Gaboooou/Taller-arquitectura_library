@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
+ */
 package cl.ucn.disc.arqsist.library;
 
 import cl.ucn.disc.arqsist.library.dao.Interface.BookDao;
@@ -10,24 +13,37 @@ import cl.ucn.disc.arqsist.library.db.Database;
 import cl.ucn.disc.arqsist.library.model.Book;
 import cl.ucn.disc.arqsist.library.service.BookService;
 import cl.ucn.disc.arqsist.library.service.LoanService;
-import cl.ucn.disc.arqsist.library.service.MemberService;
 import cl.ucn.disc.arqsist.library.service.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Tests that a failed checkout rolls back any inventory changes and leaves no partial state.
+ */
 class TransactionBugTest {
 
+    /**
+     * The book dao.
+     */
     private BookDao bookDao;
-    private LoanService  loanService;
 
+    /**
+     * The loan service.
+     */
+    private LoanService loanService;
+
+    /**
+     * Sets up the in-memory database and services before each test.
+     *
+     * @throws Exception if a database error occurs
+     */
     @BeforeEach
     void setUp() throws Exception {
         Database db = new Database("jdbc:sqlite::memory:");
@@ -39,6 +55,11 @@ class TransactionBugTest {
         loanService = new LoanService(loanDao, memberDao, bookService, clock);
     }
 
+    /**
+     * Verifies that a checkout for a non-existent member throws NotFoundException and does not decrement availableCopies.
+     *
+     * @throws Exception if a database error occurs
+     */
     @Test
     void checkoutLeavesNoPartialStateOnFailure() throws Exception {
         Book book = new Book("Clean Code", "Robert C. Martin", "9780132350884", 2);

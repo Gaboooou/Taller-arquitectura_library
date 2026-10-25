@@ -110,3 +110,33 @@
 - **Archivos modificados:**
   - `src/main/java/cl/ucn/disc/arqsist/library/App.java`
   - `docs/prompts-stage-2.md`
+
+---
+
+## Prompt 7: Verificación del Paso 6 (Tests — Cambio 15) y Avance al Paso 7 (Licencias y Javadoc — Cambio 1b)
+- **Modelo:** `Geminis Argon 4`
+- **Prompt literal del usuario:**
+> Ya realice los cambios de los test existentes y la creación de los nuevos, y pasaron todos los test
+
+- **Archivos modificados:**
+  - `src/test/java/cl/ucn/disc/arqsist/library/DueDateDuplicationTest.java`
+  - `src/test/java/cl/ucn/disc/arqsist/library/TransactionBugTest.java`
+  - `src/test/java/cl/ucn/disc/arqsist/library/AccruedFeeTest.java`
+  - `src/test/java/cl/ucn/disc/arqsist/library/DatabaseSeedTest.java`
+  - `docs/prompts-stage-2.md`
+
+---
+
+## Prompt 8: Ejecución de Partes B y C del Paso 7 (Licencias y Javadoc en Tests e Interfaces DAO — Cambio 1b)
+- **Modelo:** `Geminis Argon 4`
+- **Prompt literal del usuario:**
+> Puedes realizar los pasos b y c del plan
+
+- **Archivos modificados:**
+  - `src/test/java/cl/ucn/disc/arqsist/library/DueDateDuplicationTest.java`
+  - `src/test/java/cl/ucn/disc/arqsist/library/TransactionBugTest.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/dao/Interface/BookDao.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/dao/Interface/LoanDao.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/dao/Interface/MemberDao.java`
+  - `src/main/java/cl/ucn/disc/arqsist/library/dao/Interface/ReservationDao.java`
+  - `docs/prompts-stage-2.md`
