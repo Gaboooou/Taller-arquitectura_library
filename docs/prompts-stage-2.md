@@ -99,3 +99,14 @@
   - `src/main/java/cl/ucn/disc/arqsist/library/controller/MemberController.java`
   - `src/main/java/cl/ucn/disc/arqsist/library/service/ReservationService.java`
   - `docs/prompts-stage-2.md`
+
+---
+
+## Prompt 6: Verificación del Paso 5 (`App.java` — Cambio 11) y Avance al Paso 6 (Tests — Cambio 15)
+- **Modelo:** `Geminis Argon 4`
+- **Prompt literal del usuario:**
+> Se realizaron los cambios indicados, se ejecuto su compilación y funciono. Ahora avancemos al siguiente paso.
+
+- **Archivos modificados:**
+  - `src/main/java/cl/ucn/disc/arqsist/library/App.java`
+  - `docs/prompts-stage-2.md`
