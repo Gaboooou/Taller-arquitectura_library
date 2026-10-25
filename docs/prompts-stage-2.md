@@ -140,3 +140,26 @@
   - `src/main/java/cl/ucn/disc/arqsist/library/dao/Interface/MemberDao.java`
   - `src/main/java/cl/ucn/disc/arqsist/library/dao/Interface/ReservationDao.java`
   - `docs/prompts-stage-2.md`
+
+---
+
+## Prompt 9: Verificación de `Loan.java` (Parte A del Paso 7), Actualización del Diagrama UML (`docs/class-diagram.puml` — Paso 8 / Cambio 16b) y Cierre del Paso 9
+- **Modelo:** `Geminis Argon 4`
+- **Prompt literal del usuario:**
+> Puedes aplicar los cambios al archivo plantuml, ya realice los cambios a loan.java, con esp avancemos al siguiente paso
+
+- **Archivos modificados:**
+  - `src/main/java/cl/ucn/disc/arqsist/library/model/Loan.java`
+  - `docs/class-diagram.puml`
+  - `docs/prompts-stage-2.md`
+
+---
+
+## Prompt 10: Cierre Final del Taller — Stage 2 Completado y Desplegado
+- **Modelo:** `Geminis Argon 4`
+- **Prompt literal del usuario:**
+> Finalizamos el taller 2, funciona los detalles ajustados y se ejecuta y se despliegue
+
+- **Archivos modificados:**
+  - `docs/prompts-stage-2.md`
+  - `docs/agent-rules.md`

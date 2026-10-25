@@ -52,7 +52,7 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
 
 ### Resumen de Stage 1 (Completado — 38 puntos)
 - **Cambio 1a (1 pt):** Headers de licencia y Javadoc en archivos tocados en Stage 1.
-- **Cambio 2, 2b, 2c (11 pts):** Fechas tipadas con `LocalDate` en `Loan` y `Reservation`, creación de `db/LocalDatePersister.java`, eliminación de `Loan.isOverdue()` (nota: verificar que no quede en `Loan.java`), adaptación de *call sites* y aprobación de `DueDateDuplicationTest`.
+- **Cambio 2, 2b, 2c (11 pts):** Fechas tipadas con `LocalDate` en `Loan` y `Reservation`, creación de `db/LocalDatePersister.java`, eliminación de `Loan.isOverdue()`, adaptación de *call sites* y aprobación de `DueDateDuplicationTest`.
 - **Cambio 3 (1 pt):** Creación de `service/LoanPolicy.java` (`DUE_DAYS = 21`, `FEE_PER_DAY = 1.0`, `dueDate(LocalDate)`).
 - **Cambio 4 (1 pt):** Creación de `service/NotFoundException.java` extendiendo `RuntimeException`.
 - **Cambio 5 (8 pts):** Creación de `dao/BaseDao.java` con CRUD genérico y `transaction(Callable<R>)`.
@@ -65,114 +65,14 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
 
 ---
 
-### Plan Paso a Paso de Stage 2 (En curso — 42 puntos)
+### Plan Paso a Paso de Stage 2 (Completado — 42 puntos)
 
-#### Paso 1: Cambio 7 — Limpieza de `MemberService` (2 pts) [COMPLETADO]
-- **Archivo:** `src/main/java/cl/ucn/disc/arqsist/library/service/MemberService.java`
-- **Corrige:** Error #2 (*God service*).
-- **Especificaciones:**
-  1. Eliminar `checkout(int, int)` y los campos `BookDao` y `LoanDao`.
-  2. Mantener únicamente `private final MemberDao memberDao;` y el constructor `public MemberService(MemberDao memberDao)`.
-  3. Eliminar `throws SQLException` de `register()` y `findAll()`.
-- **Criterio "Done when":** `MemberService` tiene un solo DAO y `checkout()` ya no existe en esta clase.
-
-#### Paso 2: Cambio 8 — Refactorización de `LoanService` (12 pts) [COMPLETADO]
-- **Archivos:** `src/main/java/cl/ucn/disc/arqsist/library/service/LoanService.java` (más soporte de `transaction` en `CrudDao.java` / `BaseDao.java`).
-- **Corrige:** Errores #2, #3, #4, #10, #11 y #12.
-- **Especificaciones:**
-  1. Eliminar la constante antigua `DUE_DAYS`.
-  2. Recibir en el constructor: `LoanDao loanDao, MemberDao memberDao, BookService bookService, Clock clock`.
-  3. Obtener siempre la fecha actual mediante `LocalDate.now(clock)`.
-  4. `checkout(int memberId, int bookId)`:
-     - Validar existencia de `Member` y `Book` (lanzar `NotFoundException` si alguno es `null`).
-     - Calcular vencimiento con `LoanPolicy.dueDate(today)`.
-     - Ejecutar en una transacción (`loanDao.transaction(...)`): `bookService.borrow(bookId)` y `loanDao.create(loan)`.
-  5. `returnLoan(int loanId)`:
-     - Si `loan == null` lanzar `NotFoundException`.
-     - Si `loan.isReturned()` es `true` lanzar `IllegalStateException`.
-     - Marcar como devuelto, asignar `returnDate = today` y calcular mora solo si `today.isAfter(loan.getDueDate())`.
-     - Ejecutar en una transacción: `loanDao.update(loan)` y `bookService.returnCopy(bookId)`.
-  6. `overdueLoans()`: filtrar préstamos con `!loan.isReturned() && loan.getDueDate().isBefore(today)`.
-  7. `findAll()`: retornar `withAccruedFees(loanDao.findAll())`.
-  8. `withAccruedFees(List<Loan> loans)`: asignar en memoria la mora a cada préstamo abierto y vencido (sin persistir en BD).
-  9. `accruedFee(Loan loan, LocalDate today)`: retornar `ChronoUnit.DAYS.between(loan.getDueDate(), today) * LoanPolicy.FEE_PER_DAY`.
-- **Criterio "Done when":** `LoanService` es dueño de `checkout()`, recibe un `Clock`, usa transacciones, y `returnLoan()` rechaza préstamos inexistentes o ya devueltos.
-
-#### Paso 3: Cambio 9 — Refactorización de `ReservationService` (8 pts) [ACTUAL]
-- **Archivo:** `src/main/java/cl/ucn/disc/arqsist/library/service/ReservationService.java`
-- **Corrige:** Errores #4, #7, #8, #9 y #10.
-- **Especificaciones:**
-  1. Eliminar el campo `BookDao`.
-  2. Recibir en el constructor: `ReservationDao reservationDao, MemberDao memberDao, LoanDao loanDao, BookService bookService, Clock clock`.
-  3. `reserve(int bookId, int memberId)`:
-     - Validar que el libro (`bookService.findById(bookId)`) y el socio (`memberDao.findById(memberId)`) existan; si alguno es `null`, lanzar `NotFoundException`.
-     - Crear la reserva usando `new Reservation(member, book, LocalDate.now(clock))`.
-  4. `fulfill(int reservationId)`:
-     - Si la reserva no existe (`reservation == null`), lanzar `NotFoundException`.
-     - Si la reserva ya fue cumplida (`reservation.isFulfilled()`), lanzar `IllegalStateException`.
-     - Calcular `today = LocalDate.now(clock)` y `dueDate = LoanPolicy.dueDate(today)`.
-     - Ejecutar en una sola transacción (`reservationDao.transaction(...)`):
-       1. Marcar `reservation.setFulfilled(true)` y actualizarla (`reservationDao.update(reservation)`).
-       2. Descontar copia del inventario mediante `bookService.borrow(reservation.getBook().getId())`.
-       3. Crear y persistir el préstamo (`loanDao.create(loan)`).
-- **Criterio "Done when":** `fulfill()` usa una transacción y `BookService.borrow()`, y el campo `BookDao` fue eliminado.
-
-#### Paso 4: Cambio 12 — Refactorización de Controladores (3 pts)
-- **Archivos:**
-  - `src/main/java/cl/ucn/disc/arqsist/library/controller/BookController.java`
-  - `src/main/java/cl/ucn/disc/arqsist/library/controller/LoanController.java`
-  - `src/main/java/cl/ucn/disc/arqsist/library/controller/ReservationController.java`
-  - `src/main/java/cl/ucn/disc/arqsist/library/controller/MemberController.java`
-- **Corrige:** Errores #1 y #2.
-- **Especificaciones:**
-  1. `BookController`: eliminar `BookDao` (campo, import y parámetro si quedara) y asegurar que `GET /books` llame a `service.listAll()`.
-  2. `LoanController`: eliminar el campo y parámetro `MemberService`. Recibir solo `LoanService`. En `POST /loans` llamar a `loanService.checkout(memberId, bookId)`. Eliminar `Objects.requireNonNull` si aplica.
-  3. `ReservationController`: eliminar las dos llamadas a `Objects.requireNonNull` y el import `java.util.Objects`.
-  4. `MemberController`: sin cambios funcionales; asegurar licencia y Javadoc completo.
-- **Criterio "Done when":** Los controladores llaman únicamente a los servicios; sin `BookDao`, sin `MemberService` en `LoanController`, y sin `Objects.requireNonNull`.
-
-#### Paso 5: Cambio 11 — Cableado de la Aplicación en `App.java` (5 pts)
-- **Archivo:** `src/main/java/cl/ucn/disc/arqsist/library/App.java`
-- **Corrige:** Errores #9, #10 y #12 (mapeo HTTP y reloj del sistema).
-- **Especificaciones:**
-  1. Cambiar la URL de la base de datos a `jdbc:sqlite:database.db` (en lugar de `database.sqlite`).
-  2. Crear el reloj con `Clock.system(ZoneId.of("America/Santiago"))`.
-  3. Agregar logger: `private static final Logger log = LoggerFactory.getLogger(App.class);` y registrar cada paso con `log.info(...)`.
-  4. Actualizar la instanciación de servicios:
-     - `MemberService(memberDao)`
-     - `LoanService(loanDao, memberDao, bookService, clock)`
-     - `ReservationService(reservationDao, memberDao, loanDao, bookService, clock)`
-  5. Actualizar la instanciación de controladores:
-     - `BookController(bookService)`
-     - `LoanController(loanService)`
-  6. Configurar `jsonMapper` en Javalin para deshabilitar `SerializationFeature.WRITE_DATES_AS_TIMESTAMPS`.
-  7. Registrar los 3 manejadores de excepciones en `config.routes`:
-     - `NotFoundException.class` -> HTTP `404` con `Map.of("error", e.getMessage())`
-     - `IllegalArgumentException.class` -> HTTP `400` con `Map.of("error", e.getMessage())`
-     - `IllegalStateException.class` -> HTTP `409` con `Map.of("error", e.getMessage())`
-- **Criterio "Done when":** `App` usa `database.db`, el reloj de Santiago, el nuevo cableado, el date mapper y los 3 exception handlers.
-
-#### Paso 6: Cambio 15 — Actualización y Creación de Tests (5 pts)
-- **Archivos:**
-  - `src/test/java/cl/ucn/disc/arqsist/library/DueDateDuplicationTest.java`
-  - `src/test/java/cl/ucn/disc/arqsist/library/TransactionBugTest.java`
-  - `src/test/java/cl/ucn/disc/arqsist/library/AccruedFeeTest.java` (nuevo)
-  - `src/test/java/cl/ucn/disc/arqsist/library/DatabaseSeedTest.java` (nuevo)
-- **Especificaciones:**
-  1. `DueDateDuplicationTest`: reemplazar `MemberService` por `LoanService`; usar reloj fijo `Clock.fixed(Instant.parse("2026-01-15T10:00:00Z"), ZoneOffset.UTC)` para ambos servicios; crear el libro de prueba con 2 copias (`totalCopies = 2`); llamar a `loanService.checkout(...)`.
-  2. `TransactionBugTest`: reemplazar `MemberService` por `LoanService`; esperar `NotFoundException.class` en `assertThrows(NotFoundException.class, () -> loanService.checkout(9999, book.getId()))`.
-  3. `AccruedFeeTest` (nuevo): base de datos en memoria, libro, socio y reloj fijo (`2026-01-15T10:00:00Z`). Crear un préstamo vencido (con `dueDate` `2025-12-22`) y uno activo. Llamar a `loanService.findAll()` y verificar mora de `24.0` para el vencido y `0.0` para el activo.
-  4. `DatabaseSeedTest` (nuevo): base de datos en memoria, llamar a `db.seedIfEmpty()`. Verificar que existan préstamos y reservas, que haya un préstamo vencido, y que todo libro con préstamo abierto tenga menos copias disponibles. Llamar a `db.seedIfEmpty()` por segunda vez y verificar que la cantidad de préstamos y reservas no cambie.
-- **Criterio "Done when":** Los 4 tests existen y pasan con `./gradlew test`.
-
-#### Paso 7: Cambio 1b — Licencias y Javadoc Completo en Stage 2 (1 pt)
-- **Archivos:** Todos los archivos tocados en Stage 2 (`MemberService`, `LoanService`, `ReservationService`, `BookController`, `LoanController`, `ReservationController`, `MemberController`, `App`, `CrudDao`, `BaseDao`, y los 4 tests).
-- **Especificaciones:** Header de copyright 2026 y Javadoc en cada clase, atributo, constructor y método (`@param`, `@return`, `@throws`), además de verificar que `Loan.isOverdue()` no exista en `model/Loan.java`.
-
-#### Paso 8: Cambio 16b — Actualización del Diagrama de Clases (1 pt)
-- **Archivo:** `docs/class-diagram.puml`
-- **Especificaciones:** Reflejar los nuevos atributos/métodos de `MemberService`, `LoanService` y `ReservationService`, así como las nuevas dependencias de los controladores y servicios.
-
-#### Paso 9: Log de Prompts de Stage 2 (5 pts)
-- **Archivo:** `docs/prompts-stage-2.md`
-- **Especificaciones:** Verificar que todos los prompts de Stage 2 estén registrados en orden, con modelo exacto, texto literal y archivos modificados.
+- **Paso 1: Cambio 7 — Limpieza de `MemberService` (2 pts) [COMPLETADO]**
+- **Paso 2: Cambio 8 — Refactorización de `LoanService` (12 pts) [COMPLETADO]**
+- **Paso 3: Cambio 9 — Refactorización de `ReservationService` (8 pts) [COMPLETADO]**
+- **Paso 4: Cambio 12 — Refactorización de Controladores (3 pts) [COMPLETADO]**
+- **Paso 5: Cambio 11 — Cableado de la Aplicación en `App.java` (5 pts) [COMPLETADO]**
+- **Paso 6: Cambio 15 — Actualización y Creación de Tests (5 pts) [COMPLETADO]**
+- **Paso 7: Cambio 1b — Licencias y Javadoc Completo en Stage 2 (1 pt) [COMPLETADO]**
+- **Paso 8: Cambio 16b — Actualización del Diagrama de Clases (1 pt) [COMPLETADO]**
+- **Paso 9: Log de Prompts de Stage 2 (`docs/prompts-stage-2.md`) (5 pts) [COMPLETADO]**
