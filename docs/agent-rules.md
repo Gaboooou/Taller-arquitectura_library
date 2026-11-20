@@ -124,11 +124,11 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
   - Cierra **Errores #14, #15 (lado cliente) y #16**. Implementa `AutoCloseable`, gestiona `ManagedChannel` y `MemberServiceBlockingStub`, aplica `withDeadlineAfter(5, TimeUnit.SECONDS)` en cada llamada, mapea errores con `toException(...)` y convierte con `toMember(...)`.
 - **Paso 7: Cambio 7 — Cliente CLI (`MemberClientApp.java`) (1 pt) [COMPLETADO]**
   - Cierra **Error #14** (punto de entrada cliente). Lista todos los miembros y busca IDs pasados como argumentos; maneja errores y sale con código `1`.
-- **Paso 8: Cambio 8 — Test Round-Trip (`MemberGrpcTest.java`) (3 pts) [PENDIENTE]**
+- **Paso 8: Cambio 8 — Test Round-Trip (`MemberGrpcTest.java`) (3 pts) [COMPLETADO]**
   - Cierra **Error #17** (y verifica #13, #14, #15). Usa SQLite en memoria (`jdbc:sqlite::memory:`) y transporte in-process (`InProcessServerBuilder` / `InProcessChannelBuilder`) con `OrmliteMemberDao`.
-- **Paso 9: Cambio 9 — Documentación gRPC en `README.md` (1 pt) [PENDIENTE]**
+- **Paso 9: Cambio 9 — Documentación gRPC en `README.md` (1 pt) [COMPLETADO]**
   - Agrega sección `## gRPC API` tras la sección REST API con tabla de RPCs, límites de seguridad y comandos de ejecución.
-- **Paso 10: Cambio 10 — Actualizar Diagrama de Clases (`docs/class-diagram.puml`) (1 pt) [PENDIENTE]**
+- **Paso 10: Cambio 10 — Actualizar Diagrama de Clases (`docs/class-diagram.puml`) (1 pt) [COMPLETADO]**
   - Agrega `skinparam package<<grpc>>`, paquete `grpc` (clases del proyecto y generadas con nota) y sus relaciones.
 - **Paso 11: Cambio 11 — Ejercicio Abierto: Búsqueda de Miembros (`SearchMembers`) (10 pts) [PENDIENTE]**
   - Cierra **Error #18**. Contrato `SearchMembers` en `member.proto`, consulta literal case-insensitive con `SelectArg` y orden por `id ASC` en `dao/Interface/MemberDao.java` + `dao/OrmliteMemberDao.java`, trim y validación en `MemberService.search(String)`, adaptador en `MemberGrpcService`, método `search(String)` con deadline en `MemberClient`, y los 7 casos de aceptación en `MemberSearchTest.java`.

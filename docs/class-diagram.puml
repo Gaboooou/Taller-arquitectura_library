@@ -25,6 +25,10 @@ skinparam package<<db>> {
   BackgroundColor #F3E5F5
   BorderColor #7B1FA2
 }
+skinparam package<<grpc>> {
+  BackgroundColor #E0F7FA
+  BorderColor #00838F
+}
 hide stereotype
 
 package "controller" <<controller>> {
@@ -76,6 +80,7 @@ package "service" <<service>> {
     - MemberDao memberDao
     + register(Member) : Member
     + findAll() : List<Member>
+    + findById(int) : Member
   }
 
   class ReservationService {
@@ -237,6 +242,37 @@ package "db" <<db>> {
     + javaToSqlArg(FieldType, Object) : Object
   }
 }
+package "grpc" <<grpc>> {
+  class MemberGrpcService {
+    + {static} HOST : String
+    + {static} PORT : int
+    - MemberService memberService
+    + registerMember(RegisterMemberRequest, StreamObserver<MemberMessage>) : void
+    + listMembers(ListMembersRequest, StreamObserver<ListMembersReply>) : void
+    + getMember(GetMemberRequest, StreamObserver<MemberMessage>) : void
+  }
+
+  class MemberClient {
+    - ManagedChannel channel
+    - MemberServiceBlockingStub stub
+    + MemberClient(String, int)
+    + MemberClient(ManagedChannel)
+    + register(Member) : Member
+    + findAll() : List<Member>
+    + findById(int) : Member
+    + close() : void
+  }
+
+  class MemberClientApp {
+    + {static} main(String[]) : void
+  }
+
+  abstract class MemberServiceImplBase <<generated>>
+  class MemberServiceBlockingStub <<generated>>
+  note "Both classes are generated from member.proto." as GeneratedNote
+  GeneratedNote .. MemberServiceImplBase
+  GeneratedNote .. MemberServiceBlockingStub
+}
 
 ' ----- controller -> service -----
 BookController "1" --> "1" BookService
@@ -283,5 +319,15 @@ Loan "0..*" --> "1" Member
 Loan "0..*" --> "1" Book
 Reservation "0..*" --> "1" Member
 Reservation "0..*" --> "1" Book
+
+' ----- grpc -----
+MemberGrpcService --|> MemberServiceImplBase
+MemberGrpcService "1" --> "1" MemberService
+MemberGrpcService ..> Member
+MemberGrpcService ..> NotFoundException
+MemberClientApp "1" --> "1" MemberClient
+MemberClient ..> MemberServiceBlockingStub
+MemberClient ..> Member
+MemberClient ..> NotFoundException
 
 @enduml

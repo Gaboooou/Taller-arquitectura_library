@@ -15,3 +15,9 @@
 | 8 | `gemini-4-neon` | avanzemos al paso 6 | `src/main/java/cl/ucn/disc/arqsist/library/App.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
 | 9 | `gemini-4-neon` | Pasemos al paso 7 | `src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberClient.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
 | 10 | `gemini-4-neon` | Listo y probado, pasemos al paso 8 | `src/main/java/cl/ucn/disc/arqsist/library/MemberClientApp.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 11 | `gemini-4-neon` | Avanze al paso 9 | `src/test/java/cl/ucn/disc/arqsist/library/MemberGrpcTest.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 12 | `gemini-4-neon` | Puedes revisarlo y avanzar al siguiente paso, corrigelo si n oes correcto | `README.md`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 13 | `gemini-4-neon` | Puedes revisarlo y pasar al paso 10 | `docs/class-diagram.puml`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 14 | `gemini-4-neon` | Ayudame con este paso | `docs/prompts-stage-3.md` |
+| 15 | `gemini-4-neon` | Me ha dado error algunas partes, puedes revisarlo y pasar al siguiente bloque | `src/main/proto/member.proto`, `src/main/java/cl/ucn/disc/arqsist/library/dao/Interface/MemberDao.java`, `src/main/java/cl/ucn/disc/arqsist/library/dao/OrmliteMemberDao.java`, `src/main/java/cl/ucn/disc/arqsist/library/service/MemberService.java`, `docs/prompts-stage-3.md` |
+| 16 | `gemini-4-neon` | damelo explicito el codigo | `docs/prompts-stage-3.md` |

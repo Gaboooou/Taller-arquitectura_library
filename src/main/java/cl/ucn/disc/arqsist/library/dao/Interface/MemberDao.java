@@ -5,8 +5,11 @@ package cl.ucn.disc.arqsist.library.dao.Interface;
 
 import cl.ucn.disc.arqsist.library.model.Member;
 
+import java.util.List;
+
 /**
  * The MemberDao interface.
  */
 public interface MemberDao extends CrudDao<Member> {
+    List<Member> findByNameContaining(String query);
 }
