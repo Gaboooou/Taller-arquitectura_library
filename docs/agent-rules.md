@@ -116,11 +116,11 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
   - Cierra **Error #13**. Define `MemberService` con 3 RPCs unarios (`RegisterMember`, `ListMembers`, `GetMember`) y sus mensajes. Verificado con `./gradlew generateProto build` (fuentes generados en `build/generated/sources/proto/main/`).
 - **Paso 3: Cambio 3 — Agregar `findById(int)` en `MemberService` (1 pt) [COMPLETADO]**
   - Lanza `NotFoundException` cuando `memberDao.findById(id)` retorna `null`.
-- **Paso 4: Cambio 4 — Adaptador Servidor gRPC (`grpc/MemberGrpcService.java`) (5 pts) [PENDIENTE]**
+- **Paso 4: Cambio 4 — Adaptador Servidor gRPC (`grpc/MemberGrpcService.java`) (5 pts) [COMPLETADO]**
   - Cierra **Errores #14 y #15** (lado servidor). Extiende `MemberServiceGrpc.MemberServiceImplBase`, define `HOST = "127.0.0.1"` y `PORT = 50051`, implementa los 3 RPCs, `toError(...)` y `toMessage(...)`.
-- **Paso 5: Cambio 5 — Iniciar Servidor gRPC en `App.java` (3 pts) [PENDIENTE]**
+- **Paso 5: Cambio 5 — Iniciar Servidor gRPC en `App.java` (3 pts) [COMPLETADO]**
   - Cierra **Error #14** (cableado). Inicia `NettyServerBuilder` en `127.0.0.1:50051` con shutdown hook gracioso (`stop(Server)` con 5s) + shutdown hook para Javalin, conservando los DAOs `Ormlite*Dao` del proyecto.
-- **Paso 6: Cambio 6 — Cliente gRPC (`grpc/MemberClient.java`) (5 pts) [PENDIENTE]**
+- **Paso 6: Cambio 6 — Cliente gRPC (`grpc/MemberClient.java`) (5 pts) [COMPLETADO]**
   - Cierra **Errores #14, #15 (lado cliente) y #16**. Implementa `AutoCloseable`, gestiona `ManagedChannel` y `MemberServiceBlockingStub`, aplica `withDeadlineAfter(5, TimeUnit.SECONDS)` en cada llamada, mapea errores con `toException(...)` y convierte con `toMember(...)`.
 - **Paso 7: Cambio 7 — Cliente CLI (`MemberClientApp.java`) (1 pt) [PENDIENTE]**
   - Cierra **Error #14** (punto de entrada cliente). Lista todos los miembros y busca IDs pasados como argumentos; maneja errores y sale con código `1`.

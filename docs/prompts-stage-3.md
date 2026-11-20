@@ -11,3 +11,6 @@
 | 4 | `gemini-4-neon` | avanza al paso 3 | `docs/prompts-stage-3.md` |
 | 5 | `gemini-4-neon` | Realice los cambios, pero no agregue lo del null, ya que lleva el control de si es null en base al dao tengo entendi, puedes verificiar si estoy en lo correcto, si no indicamelo y lo cambiare. Pasemos al paso 4 si esta todo bien | `src/main/java/cl/ucn/disc/arqsist/library/service/MemberService.java`, `docs/prompts-stage-3.md` |
 | 6 | `gemini-4-neon` | Avancemos al paso 4 | `src/main/java/cl/ucn/disc/arqsist/library/service/MemberService.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 7 | `gemini-4-neon` | Avancemos al proximo paso | `src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberGrpcService.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 8 | `gemini-4-neon` | avanzemos al paso 6 | `src/main/java/cl/ucn/disc/arqsist/library/App.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 9 | `gemini-4-neon` | Pasemos al paso 7 | `src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberClient.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |

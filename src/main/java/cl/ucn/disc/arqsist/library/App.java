@@ -1,36 +1,45 @@
 /*
  * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
  */
+
 package cl.ucn.disc.arqsist.library;
 
 import cl.ucn.disc.arqsist.library.controller.BookController;
 import cl.ucn.disc.arqsist.library.controller.LoanController;
 import cl.ucn.disc.arqsist.library.controller.MemberController;
 import cl.ucn.disc.arqsist.library.controller.ReservationController;
-import cl.ucn.disc.arqsist.library.dao.*;
 import cl.ucn.disc.arqsist.library.dao.Interface.BookDao;
 import cl.ucn.disc.arqsist.library.dao.Interface.LoanDao;
 import cl.ucn.disc.arqsist.library.dao.Interface.MemberDao;
 import cl.ucn.disc.arqsist.library.dao.Interface.ReservationDao;
+import cl.ucn.disc.arqsist.library.dao.OrmliteBookDao;
+import cl.ucn.disc.arqsist.library.dao.OrmliteLoanDao;
+import cl.ucn.disc.arqsist.library.dao.OrmliteMemberDao;
+import cl.ucn.disc.arqsist.library.dao.OrmliteReservationDao;
 import cl.ucn.disc.arqsist.library.db.Database;
+import cl.ucn.disc.arqsist.library.grpc.MemberGrpcService;
 import cl.ucn.disc.arqsist.library.service.BookService;
 import cl.ucn.disc.arqsist.library.service.LoanService;
 import cl.ucn.disc.arqsist.library.service.MemberService;
 import cl.ucn.disc.arqsist.library.service.NotFoundException;
 import cl.ucn.disc.arqsist.library.service.ReservationService;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.grpc.Server;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JavalinJackson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
- * The App class.
+ * The main class of the application.
  */
 public final class App {
 
@@ -40,71 +49,108 @@ public final class App {
     private static final Logger log = LoggerFactory.getLogger(App.class);
 
     /**
-     * Private constructor to prevent instantiation.
+     * The time to wait for a server to stop, in seconds.
      */
-    private App() {
-    }
+    private static final long STOP_TIMEOUT_SECONDS = 5;
 
     /**
-     * The main entry point of the application.
-     *
-     * @param args the command line arguments
-     * @throws Exception if an initialization error occurs
+     * The main method of the application.
      */
     public static void main(String[] args) throws Exception {
+
+        log.info("creating the database");
         Database db = new Database("jdbc:sqlite:database.db");
+
+        log.info("seeding the database if empty");
         db.seedIfEmpty();
 
-        Clock clock = Clock.system(ZoneId.of("America/Santiago"));
-
+        log.info("creating the DAOs");
         BookDao bookDao = new OrmliteBookDao(db.connectionSource());
         MemberDao memberDao = new OrmliteMemberDao(db.connectionSource());
         LoanDao loanDao = new OrmliteLoanDao(db.connectionSource());
         ReservationDao reservationDao = new OrmliteReservationDao(db.connectionSource());
 
+        log.info("creating the services");
+        Clock clock = Clock.system(ZoneId.of("America/Santiago"));
         BookService bookService = new BookService(bookDao);
         MemberService memberService = new MemberService(memberDao);
         LoanService loanService = new LoanService(loanDao, memberDao, bookService, clock);
-        ReservationService reservationService = new ReservationService(reservationDao, memberDao, loanDao, bookService, clock);
+        ReservationService reservationService =
+                new ReservationService(reservationDao, memberDao, loanDao, bookService, clock);
 
-        log.info("Services initialized.");
+        log.info("starting the member gRPC server on {}:{}", MemberGrpcService.HOST, MemberGrpcService.PORT);
+        Server memberServer = NettyServerBuilder
+                .forAddress(new InetSocketAddress(MemberGrpcService.HOST, MemberGrpcService.PORT))
+                .addService(new MemberGrpcService(memberService))
+                .build()
+                .start();
 
+        // Register the hook now: a later start failure must not leave the server running.
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("stopping the gRPC server");
+            stop(memberServer);
+        }));
+
+        log.info("creating the controllers");
         BookController bookController = new BookController(bookService);
         MemberController memberController = new MemberController(memberService);
         LoanController loanController = new LoanController(loanService);
         ReservationController reservationController = new ReservationController(reservationService);
 
-        log.info("Controllers initialized.");
-
+        log.info("creating the web server");
         Javalin app = Javalin.create(config -> {
+            // write LocalDate values as ISO strings, not as arrays
+            config.jsonMapper(new JavalinJackson().updateMapper(mapper ->
+                    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)));
+
+            // static files
             config.staticFiles.add(staticFiles -> {
                 staticFiles.hostedPath = "/";
                 staticFiles.directory = "/public";
                 staticFiles.location = Location.CLASSPATH;
             });
 
-            config.jsonMapper(new JavalinJackson().updateMapper(mapper ->
-                    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            ));
-
+            // map domain errors to HTTP status codes
             config.routes.exception(NotFoundException.class, (e, ctx) ->
-                    ctx.status(404).json(Map.of("error", e.getMessage()))
-            );
-
+                    ctx.status(404).json(Map.of("error", e.getMessage())));
             config.routes.exception(IllegalArgumentException.class, (e, ctx) ->
-                    ctx.status(400).json(Map.of("error", e.getMessage()))
-            );
-
+                    ctx.status(400).json(Map.of("error", e.getMessage())));
             config.routes.exception(IllegalStateException.class, (e, ctx) ->
-                    ctx.status(409).json(Map.of("error", e.getMessage()))
-            );
+                    ctx.status(409).json(Map.of("error", e.getMessage())));
+
+            // register the controllers
             bookController.register(config);
             memberController.register(config);
             loanController.register(config);
             reservationController.register(config);
         });
 
+        log.info("starting the web server on port 7070");
         app.start(7070);
-        log.info("Server started on port 7070");
+        log.info("the web server is ready");
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("stopping the web server");
+            app.stop();
+        }));
+    }
+
+    /**
+     * Stop a gRPC server and wait for the running calls to end.
+     *
+     * @param server the server to stop
+     */
+    private static void stop(Server server) {
+        // shutdown refuses new calls and lets the running calls end.
+        server.shutdown();
+        try {
+            if (!server.awaitTermination(STOP_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                // The calls did not end in time: cancel them.
+                server.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            server.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }
