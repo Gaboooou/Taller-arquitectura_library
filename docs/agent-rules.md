@@ -114,7 +114,7 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
   - Plugin `com.google.protobuf` `0.10.1`, dependencias `io.grpc:*:1.85.1`, `protoc:3.25.9`, `annotations-api:6.0.53`, `grpc-inprocess:1.85.1` y tarea `runClient`.
 - **Paso 2: Cambio 2 — Contrato Protocol Buffers (`src/main/proto/member.proto`) (3 pts) [COMPLETADO]**
   - Cierra **Error #13**. Define `MemberService` con 3 RPCs unarios (`RegisterMember`, `ListMembers`, `GetMember`) y sus mensajes. Verificado con `./gradlew generateProto build` (fuentes generados en `build/generated/sources/proto/main/`).
-- **Paso 3: Cambio 3 — Agregar `findById(int)` en `MemberService` (1 pt) [PENDIENTE]**
+- **Paso 3: Cambio 3 — Agregar `findById(int)` en `MemberService` (1 pt) [COMPLETADO]**
   - Lanza `NotFoundException` cuando `memberDao.findById(id)` retorna `null`.
 - **Paso 4: Cambio 4 — Adaptador Servidor gRPC (`grpc/MemberGrpcService.java`) (5 pts) [PENDIENTE]**
   - Cierra **Errores #14 y #15** (lado servidor). Extiende `MemberServiceGrpc.MemberServiceImplBase`, define `HOST = "127.0.0.1"` y `PORT = 50051`, implementa los 3 RPCs, `toError(...)` y `toMessage(...)`.
