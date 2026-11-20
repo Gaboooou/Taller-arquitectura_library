@@ -14,3 +14,4 @@
 | 7 | `gemini-4-neon` | Avancemos al proximo paso | `src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberGrpcService.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
 | 8 | `gemini-4-neon` | avanzemos al paso 6 | `src/main/java/cl/ucn/disc/arqsist/library/App.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
 | 9 | `gemini-4-neon` | Pasemos al paso 7 | `src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberClient.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |
+| 10 | `gemini-4-neon` | Listo y probado, pasemos al paso 8 | `src/main/java/cl/ucn/disc/arqsist/library/MemberClientApp.java`, `docs/agent-rules.md`, `docs/prompts-stage-3.md` |

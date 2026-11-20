@@ -122,7 +122,7 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
   - Cierra **Error #14** (cableado). Inicia `NettyServerBuilder` en `127.0.0.1:50051` con shutdown hook gracioso (`stop(Server)` con 5s) + shutdown hook para Javalin, conservando los DAOs `Ormlite*Dao` del proyecto.
 - **Paso 6: Cambio 6 — Cliente gRPC (`grpc/MemberClient.java`) (5 pts) [COMPLETADO]**
   - Cierra **Errores #14, #15 (lado cliente) y #16**. Implementa `AutoCloseable`, gestiona `ManagedChannel` y `MemberServiceBlockingStub`, aplica `withDeadlineAfter(5, TimeUnit.SECONDS)` en cada llamada, mapea errores con `toException(...)` y convierte con `toMember(...)`.
-- **Paso 7: Cambio 7 — Cliente CLI (`MemberClientApp.java`) (1 pt) [PENDIENTE]**
+- **Paso 7: Cambio 7 — Cliente CLI (`MemberClientApp.java`) (1 pt) [COMPLETADO]**
   - Cierra **Error #14** (punto de entrada cliente). Lista todos los miembros y busca IDs pasados como argumentos; maneja errores y sale con código `1`.
 - **Paso 8: Cambio 8 — Test Round-Trip (`MemberGrpcTest.java`) (3 pts) [PENDIENTE]**
   - Cierra **Error #17** (y verifica #13, #14, #15). Usa SQLite en memoria (`jdbc:sqlite::memory:`) y transporte in-process (`InProcessServerBuilder` / `InProcessChannelBuilder`) con `OrmliteMemberDao`.
