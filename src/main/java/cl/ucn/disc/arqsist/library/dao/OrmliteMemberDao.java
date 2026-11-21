@@ -8,6 +8,7 @@ import cl.ucn.disc.arqsist.library.model.Member;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.SelectArg;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.field.SqlType;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -36,7 +37,7 @@ public final class OrmliteMemberDao extends BaseDao<Member> implements MemberDao
     public List<Member> findByNameContaining(String query) {
         try {
             QueryBuilder<Member, Integer> qb = dao.queryBuilder();
-            qb.where().raw("instr(lower(name), lower(?)) > 0", new SelectArg(query));
+            qb.where().raw("instr(lower(name), lower(?)) > 0", new SelectArg(SqlType.STRING, query));
             qb.orderBy("id", true);
             return qb.query();
         } catch (SQLException e) {

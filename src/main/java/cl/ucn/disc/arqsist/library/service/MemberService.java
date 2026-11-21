@@ -55,13 +55,12 @@ public final class MemberService {
      * @throws NotFoundException if the member does not exist
      */
     public Member findById(int id) {
-
+        // ORMLite returns null when the row does not exist.
         Member member = memberDao.findById(id);
         if (member == null) {
             throw new NotFoundException("Member not found: " + id);
         }
         return member;
-
     }
 
     /**

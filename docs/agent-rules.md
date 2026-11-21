@@ -62,7 +62,7 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
 | 11 | **Hardcoded fee rate** | Política | Multa mágica (`1.0`) y préstamos vencidos abiertos muestran `0.00` en listados | Cambios 3, 8 | Stage 2 |
 | 12 | **Silent return** | Contrato API | Devolver un préstamo inexistente o ya devuelto responde 200 en vez de 404 / 409 | Cambios 4, 8, 11 | Stage 2 |
 
-### 2.2 Errores de Stage 3 (`refactor.stage-3.pdf` Sección 5 — En curso)
+### 2.2 Errores de Stage 3 (`refactor.stage-3.pdf` Sección 5 — Cerrados)
 
 | # | Error | Categoría | Impacto | Corregido por Cambios | Test |
 |---|-------|-----------|---------|-----------------------|------|
@@ -106,7 +106,7 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
 
 ---
 
-### Plan Paso a Paso de Stage 3: The gRPC Member Service (En curso — 40 puntos)
+### Plan Paso a Paso de Stage 3: The gRPC Member Service (Completado — 40 puntos)
 
 > **Rama de trabajo:** `stage-3` | **Documento fuente:** `refactor.stage-3.pdf` (v1.6)
 
@@ -130,8 +130,8 @@ Cada vez que el usuario solicite avanzar a un paso del plan, el agente debe estr
   - Agrega sección `## gRPC API` tras la sección REST API con tabla de RPCs, límites de seguridad y comandos de ejecución.
 - **Paso 10: Cambio 10 — Actualizar Diagrama de Clases (`docs/class-diagram.puml`) (1 pt) [COMPLETADO]**
   - Agrega `skinparam package<<grpc>>`, paquete `grpc` (clases del proyecto y generadas con nota) y sus relaciones.
-- **Paso 11: Cambio 11 — Ejercicio Abierto: Búsqueda de Miembros (`SearchMembers`) (10 pts) [PENDIENTE]**
-  - Cierra **Error #18**. Contrato `SearchMembers` en `member.proto`, consulta literal case-insensitive con `SelectArg` y orden por `id ASC` en `dao/Interface/MemberDao.java` + `dao/OrmliteMemberDao.java`, trim y validación en `MemberService.search(String)`, adaptador en `MemberGrpcService`, método `search(String)` con deadline en `MemberClient`, y los 7 casos de aceptación en `MemberSearchTest.java`.
-- **Log IA Stage 3 (`docs/prompts-stage-3.md`) (5 pts) [EN CURSO]**
+- **Paso 11: Cambio 11 — Ejercicio Abierto: Búsqueda de Miembros (`SearchMembers`) (10 pts) [COMPLETADO]**
+  - Cierra **Error #18**. Contrato `SearchMembers` en `member.proto`, consulta literal case-insensitive con `SelectArg(SqlType.STRING, query)` y orden por `id ASC` en `dao/Interface/MemberDao.java` + `dao/OrmliteMemberDao.java`, trim y validación en `MemberService.search(String)`, adaptador en `MemberGrpcService`, método `search(String)` con deadline en `MemberClient`, y los 7 casos de aceptación en `MemberSearchTest.java`.
+- **Log IA Stage 3 (`docs/prompts-stage-3.md`) (5 pts) [COMPLETADO]**
   - Actualizado en cada interacción del Stage 3 con el formato exigido en la rúbrica y Apéndice A.
 
